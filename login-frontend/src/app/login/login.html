@@ -1,14 +1,106 @@
 <div class="login-container">
-  <h2>Login</h2>
-  <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+  <h2>Inicio de sesión</h2>
+  <p>Accedé a tu panel seguro con verificación por código OTP.</p>
+
+  <div class="info" *ngIf="infoMessage">{{ infoMessage }}</div>
+  <div class="error" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+  <!-- Paso 1: usuario + contraseña -->
+  <form
+    *ngIf="step === 'credentials'"
+    [formGroup]="loginForm"
+    (ngSubmit)="submitCredentials()"
+  >
     <div>
-      <label for="username">Username:</label>
-      <input type="text" id="username" formControlName="username" required>
+      <label for="username">Usuario</label>
+      <input id="username" type="text" formControlName="username" />
+      <div class="error-field"
+        *ngIf="loginForm.get('username')?.touched && loginForm.get('username')?.invalid">
+        El usuario es obligatorio.
+      </div>
     </div>
+
     <div>
-      <label for="password">Password:</label>
-      <input type="password" id="password" formControlName="password" required>
+      <label for="password">Contraseña</label>
+      <input id="password" type="password" formControlName="password" />
+      <div class="error-field"
+        *ngIf="loginForm.get('password')?.touched && loginForm.get('password')?.invalid">
+        La contraseña es obligatoria y debe tener al menos 6 caracteres.
+      </div>
     </div>
-    <button type="submit" [disabled]="!loginForm.valid">Login</button>
+
+    <div class="remember-row">
+      <label>
+        <input type="checkbox" formControlName="rememberMe" />
+        Recordarme
+      </label>
+    </div>
+
+    <button type="submit" [disabled]="loginForm.invalid || loading">
+      <span *ngIf="!loading">Continuar</span>
+      <span *ngIf="loading">Procesando...</span>
+    </button>
+
+    <a href="#" class="link" (click)="goToForgot(); $event.preventDefault()">
+      Olvidé mi contraseña
+    </a>
+  </form>
+
+  <!-- Paso 2: OTP -->
+  <form *ngIf="step === 'otp'" [formGroup]="otpForm" (ngSubmit)="submitOtp()">
+    <p>
+      Ingresá el código de 6 dígitos generado para
+      <strong>{{ otpUsername }}</strong>. (En este ejercicio, el código se
+      muestra en la consola del backend).
+    </p>
+
+    <div>
+      <label for="otp">Código OTP</label>
+      <input id="otp" type="text" maxlength="6" formControlName="code" />
+      <div class="error-field"
+        *ngIf="otpForm.get('code')?.touched && otpForm.get('code')?.invalid">
+        El código debe tener 6 dígitos numéricos.
+      </div>
+    </div>
+
+    <button type="submit" [disabled]="otpForm.invalid || loading">
+      <span *ngIf="!loading">Verificar OTP</span>
+      <span *ngIf="loading">Verificando...</span>
+    </button>
+
+    <button type="button" class="secondary" (click)="backToLogin()">
+      Volver al login
+    </button>
+  </form>
+
+  <!-- Paso 3: Olvidé mi contraseña -->
+  <form
+    *ngIf="step === 'forgot'"
+    [formGroup]="forgotForm"
+    (ngSubmit)="submitForgot()"
+  >
+    <p>
+      Ingresá tu correo electrónico. Si existe en el sistema, se generará un
+      token de recuperación (en este ejercicio se muestra en la consola del
+      backend).
+    </p>
+
+    <div>
+      <label for="email">Email</label>
+      <input id="email" type="email" formControlName="email" />
+      <div class="error-field"
+        *ngIf="forgotForm.get('email')?.touched && forgotForm.get('email')?.invalid">
+        Ingresá un email válido.
+      </div>
+    </div>
+
+    <button type="submit" [disabled]="forgotForm.invalid || loading">
+      <span *ngIf="!loading">Enviar instrucciones</span>
+      <span *ngIf="loading">Enviando...</span>
+    </button>
+
+    <button type="button" class="secondary" (click)="backToLogin()">
+      Volver al login
+    </button>
   </form>
 </div>
